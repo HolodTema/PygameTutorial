@@ -1,31 +1,32 @@
 import pygame as pg
+import pygame.image
 
 clock = pg.time.Clock()
 
 pg.init()
 screen = pg.display.set_mode((1440, 800))
 pg.display.set_caption('Pygame tutorial')
-icon = pg.image.load('images/icon.png')
+icon = pg.image.load('images/icon.png').convert()
 pg.display.set_icon(icon)
 
-background = pg.image.load('images/background.png')
-player = pg.image.load('images/hero1_r.png')
+background = pg.image.load('images/background.png').convert()
+player = pg.image.load('images/hero1_r.png').convert_alpha()
 
 sound_background = pg.mixer.Sound('sounds/background.mp3')
 # sound_background.play()
 
 walk_right = [
-    pg.image.load('images/hero1_r.png'),
-    pg.image.load('images/hero2_r.png'),
-    pg.image.load('images/hero3_r.png'),
-    pg.image.load('images/hero4_r.png')
+    pg.image.load('images/hero1_r.png').convert_alpha(),
+    pg.image.load('images/hero2_r.png').convert_alpha(),
+    pg.image.load('images/hero3_r.png').convert_alpha(),
+    pg.image.load('images/hero4_r.png').convert_alpha()
 ]
 
 walk_left = [
-    pg.image.load('images/hero1_l.png'),
-    pg.image.load('images/hero2_l.png'),
-    pg.image.load('images/hero3_l.png'),
-    pg.image.load('images/hero4_l.png')
+    pg.image.load('images/hero1_l.png').convert_alpha(),
+    pg.image.load('images/hero2_l.png').convert_alpha(),
+    pg.image.load('images/hero3_l.png').convert_alpha(),
+    pg.image.load('images/hero4_l.png').convert_alpha()
 ]
 player_anim_count = 0
 player_speed = 8
@@ -36,6 +37,11 @@ jump_count = 10
 
 background_x = 0
 
+ghost = pygame.image.load('images/ghost.png').convert_alpha()
+ghost_list = []
+
+timer_ghost = pg.USEREVENT + 1
+pg.time.set_timer(timer_ghost, 2500)
 running = True
 while running:
     keys = pg.key.get_pressed()
@@ -61,13 +67,23 @@ while running:
     else:
         if jump_count >= -10:
             if jump_count > 0:
-                player_y -= (jump_count**2)/2
+                player_y -= (jump_count ** 2) / 2
             else:
-                player_y += (jump_count**2)/2
+                player_y += (jump_count ** 2) / 2
             jump_count -= 1
         else:
             is_jump = False
             jump_count = 10
+
+    player_rect = walk_left[0].get_rect(topleft=(player_x, player_y))
+    if ghost_list:
+        # if len>0
+        for el in ghost_list:
+            # for every rect we draw image of ghost in coordinates of el (rect)
+            screen.blit(ghost, el)
+            el.x -= 10
+            if player_rect.colliderect(el):
+                print('Game over!')
 
     pg.display.update()
     # proper handling of quit
@@ -75,5 +91,7 @@ while running:
         if event.type == pg.QUIT:
             running = False
             pg.quit()
+        if event.type == timer_ghost:
+            ghost_list += [ghost.get_rect(topleft=(1440, 600))]
 
     clock.tick(30)
