@@ -49,6 +49,10 @@ label_play_again = label.render('Play again', False, (115, 132, 148))
 rect_label_play_again = label_play_again.get_rect(topleft=(500, 400))
 gameplay = True
 
+bullet = pg.image.load('images/bullet.png').convert_alpha()
+bullets = []
+bullets_left = 5
+
 running = True
 while running:
 
@@ -95,6 +99,21 @@ while running:
                     ghost_list.pop(i)
                 if player_rect.colliderect(el):
                     gameplay = False
+
+        if len(bullets) > 0:
+            for i, el in enumerate(bullets):
+                screen.blit(bullet, (el.x, el.y))
+                el.x += 16
+                if el.x > 1450:
+                    bullets.pop(i)
+                    bullets_left += 1
+                if len(ghost_list) > 0:
+                    for index, ghost_el in enumerate(ghost_list):
+                        if el.colliderect(ghost_el):
+                            ghost_list.pop(index)
+                            bullets.pop(i)
+                            bullets_left += 1
+
     else:
         screen.fill((87, 88, 89))
         screen.blit(label_lose, (500, 300))
@@ -104,9 +123,9 @@ while running:
         if rect_label_play_again.collidepoint(mouse) and pg.mouse.get_pressed()[0]:
             player_x = 150
             ghost_list.clear()
+            bullets.clear()
+            bullets_left = 5
             gameplay = True
-
-
 
     pg.display.update()
     # proper handling of quit
@@ -116,5 +135,8 @@ while running:
             pg.quit()
         if event.type == timer_ghost:
             ghost_list += [ghost.get_rect(topleft=(1440, 600))]
+        if gameplay and event.type == pg.KEYUP and event.key == pg.K_SPACE and bullets_left > 0:
+            bullets += [bullet.get_rect(topleft=(player_x + 30, player_y + 10))]
+            bullets_left -= 1
 
     clock.tick(30)
